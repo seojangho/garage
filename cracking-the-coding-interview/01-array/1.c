@@ -53,9 +53,26 @@ bool has_duplicate(char str0[], char str1[]) {
   return found;
 }
 
-void test(char str0[], char str1[]) {
+bool has_duplicate_nsquare(char str0[], char str1[]) {
+  for (size_t i = 0; str0[i]; i++) {
+    for (size_t j = 0; str1[j]; j++) {
+      if (str0[i] == str1[j]) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void test(char str0[], char str1[], bool expectation) {
+  if (has_duplicate(str0, str1) != expectation) {
+    error(1, 0, "has_duplicate wrong");
+  }
+  if (has_duplicate_nsquare(str0, str1) != expectation) {
+    error(1, 0, "has_duplicate_nsquare wrong");
+  }
   printf("%s vs %s => have %sduplicate\n", str0, str1,
-         has_duplicate(str0, str1) ? "" : "no ");
+         expectation ? "" : "no ");
 }
 
 int main(int argc, char *argv[]) {
@@ -63,12 +80,12 @@ int main(int argc, char *argv[]) {
   if (!hcreate_success) {
     error(1, errno, "hcreate");
   }
-  test("", "");
-  test("a", "");
-  test("a", "a");
-  test("a", "b");
-  test("abcd", "efghi");
-  test("abcd", "defghi");
+  test("", "", false);
+  test("a", "", false);
+  test("a", "a", true);
+  test("a", "b", false);
+  test("abcd", "efghi", false);
+  test("abcd", "defghi", true);
   hdestroy();
   return 0;
 }
