@@ -21,7 +21,7 @@ sudo ip netns exec "${NETNS_NAME}" ip address add "${NETNS_IP}" broadcast + dev 
 sudo ip netns exec "${NETNS_NAME}" ip link set "${MACVLAN_NAME}" up
 
 # do
-sudo ip netns exec "${COMMANDS[@]}"
+sudo ip netns exec "${COMMANDS[@]}" || :
 
 # teardown
 sudo ip netns exec "${NETNS_NAME}" ip link delete "${MACVLAN_NAME}"
