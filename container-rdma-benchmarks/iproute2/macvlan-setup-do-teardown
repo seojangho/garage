@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# usage: ./macvlan-setup-do-teardown HOST_INTERFACE NETNS_IP COMMANDS...
+# example: ./macvlan-setup-do-teardown enp129s0f0 172.30.10.206/24 ping 172.30.10.106
+
+declare -r MACVLAN_NAME=macvlan1
+declare -r NETNS_NAME=net1
+
+HOST_INTERFACE=${1:?You should specify host interface}
+NETNS_IP=${1:?You should specify ip address inside the network namespace}
+declare -a COMMANDS
+COMMANDS=("${@:3}")
+
+# setup
+sudo ip link add "${MACVLAN_NAME}" link "${HOST_INTERFACE}" type macvlan mode bridge
+sudo ip netns add "${NETNS_NAME}"
+sudo ip link set "${MACVLAN_NAME}" netns "${NETNS_NAME}"
+sudo ip netns exec "${NETNS_NAME}" ip address add "${NETNS_IP}" broadcast + dev "${MACVLAN_NAME}"
+sudo ip netns exec "${NETNS_NAME}" ip link set "${MACVLAN_NAME}" up
+
+# do
+sudo ip netns exec "${COMMANDS[@]}"
+
+# teardown
+sudo ip netns exec "${NETNS_NAME}" ip link delete "${MACVLAN_NAME}"
+sudo ip netns delete "${NETNS_NAME}"
+
+exit 0
