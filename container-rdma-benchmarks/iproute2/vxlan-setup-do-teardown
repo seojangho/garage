@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# usage: ./vxlan-setup-do-teardown HOST_INTERFACE NETNS_IP VXLAN_ID IP_MULTICAST_ADDRESS COMMANDS...
+# example: ./vxlan-setup-do-teardown enp129s0f0 10.1.1.1/24 42 239.1.1.1 ping 10.1.1.2
+
+declare -r VXLAN_NAME=vxlan
+declare -r NETNS_NAME=net1
+
+HOST_INTERFACE=${1:?You should specify host interface}
+NETNS_IP=${2:?You should specify ip address inside the network namespace}
+VXLAN_ID=${3:?You should specify vxlan id}
+IP_MULTICAST_ADDRESS=${4:?You should specify ip multicast address}
+declare -a COMMANDS
+COMMANDS=("${@:5}")
+
+# setup
+sudo ip link add "${VXLAN_NAME}" type vxlan id "${VXLAN_ID}" group "${IP_MULTICAST_ADDRESS}" dev "${HOST_INTERFACE}" dstport 4789
+sudo ip netns add "${NETNS_NAME}"
+sudo ip link set "${VXLAN_NAME}" netns "${NETNS_NAME}"
+sudo ip netns exec "${NETNS_NAME}" ip address add "${NETNS_IP}" broadcast + dev "${VXLAN_NAME}"
+sudo ip netns exec "${NETNS_NAME}" ip link set "${VXLAN_NAME}" up
+
+# do
+sudo ip netns exec "${NETNS_NAME}" "${COMMANDS[@]}" || :
+
+# teardown
+sudo ip netns exec "${NETNS_NAME}" ip link delete "${VXLAN_NAME}"
+sudo ip netns delete "${NETNS_NAME}"
+
+exit 0
