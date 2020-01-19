@@ -1,0 +1,37 @@
+From 96a4ef77d2c69bfdd6dc22b042f22842d5e708d7 Mon Sep 17 00:00:00 2001
+From: Jangho Seo <jangho@jangho.io>
+Date: Wed, 15 Jan 2020 14:24:49 +0900
+Subject: [PATCH 1/5] Example source
+
+---
+ polyglot/example/.gitignore | 2 ++
+ polyglot/example/Hello.jl7  | 8 ++++++++
+ 2 files changed, 10 insertions(+)
+ create mode 100644 polyglot/example/.gitignore
+ create mode 100644 polyglot/example/Hello.jl7
+
+diff --git a/polyglot/example/.gitignore b/polyglot/example/.gitignore
+new file mode 100644
+index 0000000..5738ffe
+--- /dev/null
++++ b/polyglot/example/.gitignore
+@@ -0,0 +1,2 @@
++*.java
++*.class
+diff --git a/polyglot/example/Hello.jl7 b/polyglot/example/Hello.jl7
+new file mode 100644
+index 0000000..a2dc82b
+--- /dev/null
++++ b/polyglot/example/Hello.jl7
+@@ -0,0 +1,8 @@
++import java.util.*;
++
++public class Hello {
++  public static void main(String[] args) {
++    final TreeMap<Integer, Boolean> myMap = new TreeMap<>();
++    System.out.println("Hello!");
++  }
++}
+-- 
+2.25.0
+

@@ -1,0 +1,68 @@
+From 3d0755561bf5fbfc202654284b917f474591d355 Mon Sep 17 00:00:00 2001
+From: Jangho Seo <jangho@jangho.io>
+Date: Wed, 15 Jan 2020 17:05:25 +0900
+Subject: [PATCH 3/5] valueat keyword works like unary minus
+
+---
+ polyglot/example/Hello.jl7                          |  2 +-
+ .../src/polyglot/ext/jl5/ast/JL5CallExt.java        |  3 +++
+ .../polyglot/src/polyglot/ext/jl7/parse/jl7.ppg     | 13 +++++++++++++
+ 3 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/polyglot/example/Hello.jl7 b/polyglot/example/Hello.jl7
+index da1722a..278bee6 100644
+--- a/polyglot/example/Hello.jl7
++++ b/polyglot/example/Hello.jl7
+@@ -2,6 +2,6 @@ import java.util.*;
+ 
+ public class Hello {
+   public static void main(String[] args) {
+-    System.out.println(valueat 0x0);
++    System.out.println(valueat 100);
+   }
+ }
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl5/ast/JL5CallExt.java b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl5/ast/JL5CallExt.java
+index 5e531af..ad6029d 100644
+--- a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl5/ast/JL5CallExt.java
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl5/ast/JL5CallExt.java
+@@ -142,6 +142,9 @@ public class JL5CallExt extends JL5ProcedureCallExt implements CallOps {
+         List<Type> argTypes = new ArrayList<>(n.arguments().size());
+ 
+         for (Expr e : n.arguments()) {
++            if (e == null) {
++                throw new RuntimeException(String.format("%s is null", n.arguments()));
++            }
+             if (!e.type().isCanonical()) {
+                 return n;
+             }
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
+index a0b00a4..0c7e4f0 100644
+--- a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
+@@ -49,6 +49,7 @@ parser Grm extends polyglot.ext.jl5.parse.Grm  {:
+ :};
+ 
+ terminal Token VALUEAT;
++non terminal Expr valueat_expression;
+ non terminal semicolon_opt;
+ non terminal TryWithResources try_with_resources_statement;
+ non terminal List<LocalDecl> resources;
+@@ -145,3 +146,15 @@ extend class_instance_creation_expression ::=
+ 		RESULT = parser.nf.New(parser.pos(a), a.toExpr(), d, tn, i, k);
+ 	:}
+ ;
++
++valueat_expression ::=
++                    // Expr
++    VALUEAT unary_expression:a
++        {: RESULT = parser.nf.Unary(parser.pos(a), Unary.NEG, a); :}
++    ;
++
++extend unary_expression ::=
++                    // Expr
++    valueat_expression:a
++        {: RESULT = a; :}
++    ;
+-- 
+2.25.0
+

@@ -1,0 +1,44 @@
+From 43b0bdc0b3f6e4036a65a816c3a90b3408662716 Mon Sep 17 00:00:00 2001
+From: Jangho Seo <jangho@jangho.io>
+Date: Wed, 15 Jan 2020 17:13:13 +0900
+Subject: [PATCH 4/5] Modify grammar
+
+---
+ polyglot/example/Hello.jl7                                   | 5 ++++-
+ .../polyglot/src/polyglot/ext/jl7/parse/jl7.ppg              | 4 ++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/polyglot/example/Hello.jl7 b/polyglot/example/Hello.jl7
+index 278bee6..c2f8c78 100644
+--- a/polyglot/example/Hello.jl7
++++ b/polyglot/example/Hello.jl7
+@@ -1,7 +1,10 @@
+ import java.util.*;
+ 
+ public class Hello {
++  public static int val() {
++    return 1010;
++  }
+   public static void main(String[] args) {
+-    System.out.println(valueat 100);
++    System.out.println(valueat(val() + val()));
+   }
+ }
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
+index 0c7e4f0..9d274bd 100644
+--- a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
+@@ -149,8 +149,8 @@ extend class_instance_creation_expression ::=
+ 
+ valueat_expression ::=
+                     // Expr
+-    VALUEAT unary_expression:a
+-        {: RESULT = parser.nf.Unary(parser.pos(a), Unary.NEG, a); :}
++    VALUEAT LPAREN expression:a RPAREN
++        {: RESULT = a; :}
+     ;
+ 
+ extend unary_expression ::=
+-- 
+2.25.0
+

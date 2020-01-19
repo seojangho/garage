@@ -1,0 +1,59 @@
+From 7d5d948b88fa4c8ed188411be7d12e1f78048625 Mon Sep 17 00:00:00 2001
+From: Jangho Seo <jangho@jangho.io>
+Date: Wed, 15 Jan 2020 15:56:03 +0900
+Subject: [PATCH 2/5] Add "valueat" keyword to Java 7
+
+---
+ polyglot/example/Hello.jl7                                     | 3 +--
+ .../polyglot/src/polyglot/ext/jl7/parse/jl7.flex               | 1 +
+ .../polyglot/src/polyglot/ext/jl7/parse/jl7.ppg                | 2 ++
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/polyglot/example/Hello.jl7 b/polyglot/example/Hello.jl7
+index a2dc82b..da1722a 100644
+--- a/polyglot/example/Hello.jl7
++++ b/polyglot/example/Hello.jl7
+@@ -2,7 +2,6 @@ import java.util.*;
+ 
+ public class Hello {
+   public static void main(String[] args) {
+-    final TreeMap<Integer, Boolean> myMap = new TreeMap<>();
+-    System.out.println("Hello!");
++    System.out.println(valueat 0x0);
+   }
+ }
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.flex b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.flex
+index 6805027..08e208f 100644
+--- a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.flex
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.flex
+@@ -106,6 +106,7 @@ import java.math.BigInteger;
+         keywords.put("void",          new Integer(sym.VOID));
+         keywords.put("volatile",      new Integer(sym.VOLATILE));
+         keywords.put("while",         new Integer(sym.WHILE));
++        keywords.put("valueat",       new Integer(sym.VALUEAT));
+     }
+ 
+     @Override
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
+index dce24ca..a0b00a4 100644
+--- a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
+@@ -33,6 +33,7 @@ import polyglot.ext.jl7.ast.*;
+ import polyglot.ext.jl7.types.*;
+ 
+ 
++
+ parser Grm extends polyglot.ext.jl5.parse.Grm  {:
+ 	public final JL7TypeSystem ts;
+ 	public final JL7NodeFactory nf;
+@@ -47,6 +48,7 @@ parser Grm extends polyglot.ext.jl5.parse.Grm  {:
+ 
+ :};
+ 
++terminal Token VALUEAT;
+ non terminal semicolon_opt;
+ non terminal TryWithResources try_with_resources_statement;
+ non terminal List<LocalDecl> resources;
+-- 
+2.25.0
+

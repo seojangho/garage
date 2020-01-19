@@ -1,0 +1,121 @@
+From c28b9f281cb17f9984e8931a4710a065f64f65d9 Mon Sep 17 00:00:00 2001
+From: Jangho Seo <jangho@jangho.io>
+Date: Wed, 15 Jan 2020 17:52:01 +0900
+Subject: [PATCH 5/5] Add valueAt extension node
+
+---
+ .../polyglot/ext/jl7/ast/JL7NodeFactory.java  |  2 +
+ .../ext/jl7/ast/JL7NodeFactory_c.java         |  7 +++
+ .../src/polyglot/ext/jl7/ast/JL7ValueAt.java  |  8 ++++
+ .../polyglot/ext/jl7/ast/JL7ValueAt_c.java    | 43 +++++++++++++++++++
+ .../src/polyglot/ext/jl7/parse/jl7.ppg        |  2 +-
+ 5 files changed, 61 insertions(+), 1 deletion(-)
+ create mode 100644 polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7ValueAt.java
+ create mode 100644 polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7ValueAt_c.java
+
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7NodeFactory.java b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7NodeFactory.java
+index 7c5aa06..4c62f6d 100644
+--- a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7NodeFactory.java
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7NodeFactory.java
+@@ -53,4 +53,6 @@ public interface JL7NodeFactory extends JL5NodeFactory {
+ 
+     TryWithResources TryWithResources(Position pos, List<LocalDecl> resources,
+             Block tryBlock, List<Catch> catchBlocks, Block finallyBlock);
++
++    JL7ValueAt ValueAt(Position pos, Expr expr);
+ }
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7NodeFactory_c.java b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7NodeFactory_c.java
+index 3eaee24..febcb41 100644
+--- a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7NodeFactory_c.java
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7NodeFactory_c.java
+@@ -112,4 +112,11 @@ public class JL7NodeFactory_c extends JL5NodeFactory_c implements
+         n = ext(n, extFactory().extTryWithResources());
+         return n;
+     }
++
++    @Override
++    public JL7ValueAt ValueAt(Position pos, Expr expr) {
++        JL7ValueAt valueAt = new JL7ValueAt_c(pos, expr);
++        // TODO: ext & decl?
++        return valueAt;
++    }
+ }
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7ValueAt.java b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7ValueAt.java
+new file mode 100644
+index 0000000..975a032
+--- /dev/null
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7ValueAt.java
+@@ -0,0 +1,8 @@
++package polyglot.ext.jl7.ast;
++
++import polyglot.ast.Expr;
++
++public interface JL7ValueAt extends Expr {
++    Expr expr();
++    JL7ValueAt expr(Expr expr);
++}
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7ValueAt_c.java b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7ValueAt_c.java
+new file mode 100644
+index 0000000..5547c9a
+--- /dev/null
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/ast/JL7ValueAt_c.java
+@@ -0,0 +1,43 @@
++package polyglot.ext.jl7.ast;
++
++import polyglot.ast.*;
++import polyglot.util.Position;
++import polyglot.visit.CFGBuilder;
++
++import java.util.List;
++
++public class JL7ValueAt_c extends Expr_c implements JL7ValueAt {
++    protected Expr expr;
++
++    public JL7ValueAt_c(Position pos, Expr expr) {
++        this(pos, expr, null);
++    }
++
++    public JL7ValueAt_c(Position pos, Expr expr, Ext ext) {
++        super(pos, ext);
++        assert (expr != null);
++        this.expr = expr;
++    }
++
++    @Override
++    public Term firstChild() {
++        return expr;
++    }
++
++    @Override
++    public <T> List<T> acceptCFG(CFGBuilder<?> v, List<T> succs) {
++        v.visitCFG(expr, this, EXIT);
++        return succs;
++    }
++
++    @Override
++    public Expr expr() {
++        return expr;
++    }
++
++    @Override
++    public JL7ValueAt expr(Expr expr) {
++        this.expr = expr;
++        return this;
++    }
++}
+diff --git a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
+index 9d274bd..da111b3 100644
+--- a/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
++++ b/polyglot/polyglot-tutorial/polyglot/src/polyglot/ext/jl7/parse/jl7.ppg
+@@ -150,7 +150,7 @@ extend class_instance_creation_expression ::=
+ valueat_expression ::=
+                     // Expr
+     VALUEAT LPAREN expression:a RPAREN
+-        {: RESULT = a; :}
++        {: RESULT = parser.nf.ValueAt(parser.pos(a), a); :}
+     ;
+ 
+ extend unary_expression ::=
+-- 
+2.25.0
+
